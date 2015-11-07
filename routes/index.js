@@ -3,20 +3,22 @@ var express = require('express');
 var router = express.Router();
 var request = require('request');
 
-
-
 /* GET home page. */
 router.get('/', function (req, res) {
   var lat = req.query.lat;
   var lng = req.query.lng;
   //y = lat, x=lng
+  var _result = [];
+
+  var metricsCallback = function(data) {
+    _result.push(data);
+    res.json(_result);
+  };
   var boundaryCallback = function (data) {
-    res.json(data);
+    _result.push(data);
+    getLayerData(lat, lng, metricsCallback);
   };
   getBoundaryData(lat, lng, boundaryCallback);
-  // getLayerData(lat, lng);
-
-
 });
 
 
@@ -24,7 +26,6 @@ router.get('/', function (req, res) {
 function getBoundaryData(lat, lng, callback) {
   var boundariesUri = 'http://api.data.linz.govt.nz/api/vectorQuery.json?layer=804&';
   var boundariesEndQueryString = '&max_results=1&radius=0&geometry=true';
-  //http://api.data.linz.govt.nz/api/vectorQuery.json?key=[key]&layer=804&x=171.6178138&y=-43.5152097&max_results=1&radius=0&geometry=true
   var boundariesApiKey = '&key=6e69f7dfe0564917b36322a6581200f0';
   var url = boundariesUri + boundariesApiKey + '&y=' + lat + '&x=' + lng + boundariesEndQueryString;
 
@@ -33,24 +34,44 @@ function getBoundaryData(lat, lng, callback) {
     if (!error && response.statusCode === 200) {
       var parsedBody = JSON.parse(body).vectorQuery.layers['804'];
       var result = parsedBody.features && parsedBody.features.length > 0 ? parsedBody.features[0].geometry : [];
-
-      // res.json(result);
     } else {
       //error 
-      console.log(body);
-      // res.json(body);
+      var result = body;
     }
     callback(result);
   });
 }
 
-// function getLayerData(lat, lng) {
-//   var metricsUri = 'http://api.lris.scinfo.org.nz/api/vectorQuery.json?';
-//   //http://api.lris.scinfo.org.nz/api/vectorQuery.json?key=ac29936c13b1492ea857d97432f8c753&layer=66&x=173.0296851171197&y=-41.43328962666189
-//   var metricsApiKey = 'key=ac29936c13b1492ea857d97432f8c753';
-//   var latLng = 'x=' & '&y='
-//   var url = metricsUri + metricsApiKey +
+function getLayerData(lat, lng, callback) {
+  var metricsUri = 'http://api.lris.scinfo.org.nz/api/vectorQuery.json?radius=0&';
+  var metricsApiKey = 'key=ac29936c13b1492ea857d97432f8c753';
+  var latLng = '&x=' + lng + '&y=' + lat;
+  var url = metricsUri + metricsApiKey + latLng;
+  var layers = require('./layers.js');
+  var results = [];
 
-// }
+  layers.forEach(function (element, index, array) {
+    element.values.forEach(function (layerId, _index, array) {
+      var _url = url + '&layer=' + layerId;
+      request(_url, function (error, response, body) {
+        if (!error && response.statusCode === 200) {
+          var parsedBody = JSON.parse(body).vectorQuery.layers[layerId];
+          if (parsedBody) {
+            var result = {name: element.name, value: parsedBody};
+            results.push(result)
+          }
+          
+        } else {
+          console.log('error: ',body);
+          var result = body;
+          results.push(result)
+        }
+        if(index === layers.length -1) {
+          callback(results);
+        }
+      });
+    });
+  });
+}
 
 module.exports = router;
