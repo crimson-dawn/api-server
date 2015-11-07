@@ -50,8 +50,8 @@ function getLayerData(lat, lng, callback) {
   var layers = require('./layers.js');
   var results = [];
 
-  layers.forEach(function (element, index, array) {
-    (element.values).forEach(function (layer, _index, array) {
+  layers.forEach(function (element, index) {
+    (element.values).forEach(function (layer, _index) {
       var _url = url + '&layer=' + layer.id;
       var result;
       request(_url, function (error, response, body) {
@@ -68,7 +68,6 @@ function getLayerData(lat, lng, callback) {
         var outerIndexFinished = (index === (layers.length - 1));
         var innerIndexFinished = (_index === (element.values.length -1));
         if ( outerIndexFinished && innerIndexFinished) {
-          console.log('doing callback', index, (layers.length - 1), _index)
           callback(results);
         }
       });
