@@ -8,14 +8,14 @@ router.get('/', function (req, res) {
   var lat = req.query.lat;
   var lng = req.query.lng;
   //y = lat, x=lng
-  var _result = [];
+  var _result = {};
 
   var metricsCallback = function (data) {
-    _result.push(data);
+    _result.metrics = data;
     res.json(_result);
   };
   var boundaryCallback = function (data) {
-    _result.push(data);
+    _result.boundaries = data;
     getLayerData(lat, lng, metricsCallback);
   };
   getBoundaryData(lat, lng, boundaryCallback);
