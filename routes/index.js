@@ -60,7 +60,6 @@ function getLayerData(lat, lng, callback) {
           if (parsedBody) {
             result = {
               name: element.name,
-              value: parsedBody,
               metricName: layer.name
             };
             results.push(result);
