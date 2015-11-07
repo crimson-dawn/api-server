@@ -11,7 +11,21 @@ router.get('/', function (req, res) {
   var _result = {};
 
   var metricsCallback = function (data) {
-    _result.metrics = data;
+    
+    var metrics = {};
+    data.forEach(function (metric, index, array) {
+      console.log(Object.keys(metric))
+      var key = metric.name;
+      if(metrics[key]) {
+        metrics[key].values.push(metric.value);
+      } else {
+        metrics[key] = {};
+        metrics[key].name = metric.name;
+        metrics[key].values = [metric.value];
+      }
+    });
+    console.log(metrics);
+    _result.metrics = metrics;
     res.json(_result);
   };
   var boundaryCallback = function (data) {
