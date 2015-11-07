@@ -11,17 +11,17 @@ router.get('/', function (req, res) {
   var lng = req.query.lng;
   //y = lat, x=lng
   var boundaryCallback = function (data) {
-
+    res.json(data);
   };
   getBoundaryData(lat, lng, boundaryCallback);
-  getLayerData(lat, lng);
+  // getLayerData(lat, lng);
 
 
 });
 
 
 
-function getBoundaryData(lat, lng) {
+function getBoundaryData(lat, lng, callback) {
   var boundariesUri = 'http://api.data.linz.govt.nz/api/vectorQuery.json?layer=804&';
   var boundariesEndQueryString = '&max_results=1&radius=0&geometry=true';
   //http://api.data.linz.govt.nz/api/vectorQuery.json?key=[key]&layer=804&x=171.6178138&y=-43.5152097&max_results=1&radius=0&geometry=true
@@ -33,22 +33,24 @@ function getBoundaryData(lat, lng) {
     if (!error && response.statusCode === 200) {
       var parsedBody = JSON.parse(body).vectorQuery.layers['804'];
       var result = parsedBody.features && parsedBody.features.length > 0 ? parsedBody.features[0].geometry : [];
-      res.json(result);
+
+      // res.json(result);
     } else {
       //error 
       console.log(body);
-      res.json(body);
+      // res.json(body);
     }
+    callback(result);
   });
 }
 
-function getLayerData(lat, lng) {
-  var metricsUri = 'http://api.lris.scinfo.org.nz/api/vectorQuery.json?';
-  //http://api.lris.scinfo.org.nz/api/vectorQuery.json?key=ac29936c13b1492ea857d97432f8c753&layer=66&x=173.0296851171197&y=-41.43328962666189
-  var metricsApiKey = 'key=ac29936c13b1492ea857d97432f8c753';
-  var latLng = 'x=' & '&y='
-  var url = metricsUri + metricsApiKey +
+// function getLayerData(lat, lng) {
+//   var metricsUri = 'http://api.lris.scinfo.org.nz/api/vectorQuery.json?';
+//   //http://api.lris.scinfo.org.nz/api/vectorQuery.json?key=ac29936c13b1492ea857d97432f8c753&layer=66&x=173.0296851171197&y=-41.43328962666189
+//   var metricsApiKey = 'key=ac29936c13b1492ea857d97432f8c753';
+//   var latLng = 'x=' & '&y='
+//   var url = metricsUri + metricsApiKey +
 
-}
+// }
 
 module.exports = router;
