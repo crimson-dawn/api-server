@@ -10,7 +10,7 @@ router.get('/', function (req, res) {
   //y = lat, x=lng
   var _result = [];
 
-  var metricsCallback = function(data) {
+  var metricsCallback = function (data) {
     _result.push(data);
     res.json(_result);
   };
@@ -51,22 +51,22 @@ function getLayerData(lat, lng, callback) {
   var results = [];
 
   layers.forEach(function (element, index, array) {
-    element.values.forEach(function (layerId, _index, array) {
-      var _url = url + '&layer=' + layerId;
+    element.values.forEach(function (layer, _index, array) {
+      var _url = url + '&layer=' + layer.id;
+      var result;
       request(_url, function (error, response, body) {
         if (!error && response.statusCode === 200) {
-          var parsedBody = JSON.parse(body).vectorQuery.layers[layerId];
+          var parsedBody = JSON.parse(body).vectorQuery.layers[layer.id];
           if (parsedBody) {
-            var result = {name: element.name, value: parsedBody};
-            results.push(result)
+            result = {
+              name: element.name,
+              value: parsedBody,
+              metricName: layer.name
+            };
+            results.push(result);
           }
-          
-        } else {
-          console.log('error: ',body);
-          var result = body;
-          results.push(result)
         }
-        if(index === layers.length -1) {
+        if (index === layers.length - 1) {
           callback(results);
         }
       });
